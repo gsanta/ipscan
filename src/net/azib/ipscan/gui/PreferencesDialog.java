@@ -65,7 +65,7 @@ public class PreferencesDialog extends AbstractModalDialog {
 	private Button askConfirmationCheckbox;
 	
 	//gsanta 
-	private Text svnSeparatorText;
+	private Text csvSeparatorText;
 	//gsanta
 	
 	public PreferencesDialog(PingerRegistry pingerRegistry, ScannerConfig scannerConfig, GUIConfig guiConfig, ConfigDetectorDialog configDetectorDialog) {
@@ -198,8 +198,8 @@ public class PreferencesDialog extends AbstractModalDialog {
 
 		label = new Label(threadsGroup, SWT.NONE);
 		label.setText(Labels.getLabel("preferences.csv.separator"));
-		svnSeparatorText = new Text(threadsGroup, SWT.BORDER);
-		threadDelayText.setLayoutData(gridData);
+		csvSeparatorText = new Text(threadsGroup, SWT.BORDER);
+		csvSeparatorText.setLayoutData(gridData);
 		//gsanta
 		
 //		new Label(threadsGroup, SWT.NONE);
@@ -415,6 +415,9 @@ public class PreferencesDialog extends AbstractModalDialog {
 		displayMethod[guiConfig.displayMethod.ordinal()].setSelection(true);
 		showInfoCheckbox.setSelection(guiConfig.showScanStats);
 		askConfirmationCheckbox.setSelection(guiConfig.askScanConfirmation);
+		//gsanta
+		csvSeparatorText.setText(scannerConfig.csvSeparator);
+		//gsanta
 	}
 	
 	private void savePreferences() {
@@ -454,6 +457,9 @@ public class PreferencesDialog extends AbstractModalDialog {
 		}
 		guiConfig.showScanStats = showInfoCheckbox.getSelection();
 		guiConfig.askScanConfirmation = askConfirmationCheckbox.getSelection();
+		//gsanta
+		scannerConfig.csvSeparator = csvSeparatorText.getText();
+		//gsanta
 	}
 
 	/**
