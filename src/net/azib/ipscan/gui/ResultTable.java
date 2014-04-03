@@ -5,6 +5,7 @@
  */
 package net.azib.ipscan.gui;
 
+import net.azib.ipscan.config.Config;
 import net.azib.ipscan.config.GUIConfig;
 import net.azib.ipscan.config.Labels;
 import net.azib.ipscan.core.ScanningResult;
@@ -51,6 +52,9 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 	private Listener columnClickListener;
 
 	private Listener columnResizeListener;
+	
+	Exporter exporter;
+	ExportProcessor exportProcessor;
 
 	public ResultTable(Composite parent, GUIConfig guiConfig, FetcherRegistry fetcherRegistry, ScanningResultList scanningResultList, StateMachine stateMachine, ColumnsActions.ColumnClick columnClickListener, ColumnsActions.ColumnResize columnResizeListener,ExporterRegistry exporterRegistry) {
 		super(parent, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
@@ -83,6 +87,11 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 		
 		// listen to state machine events
 		stateMachine.addTransitionListener(this);
+		
+		//gsanta
+		exporter = exporterRegistry.createExporter(Config.getConfig().forScanner().outputFileName);
+		exportProcessor = new ExportProcessor(exporter, new File(Config.getConfig().forScanner().outputFileName), true);
+		//gsanta
 	}
 
 	/**
@@ -153,25 +162,16 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 				}
 				
 				//gsanta
-				String fileName = "c:\\\\dev\\valami.csv";
-				Exporter exporter = exporterRegistry.createExporter(fileName);
 				
-				
-				// TODO: expose appending feature in the GUI
-				ExportProcessor exportProcessor = new ExportProcessor(exporter, new File(fileName), true);
-				
-				// in case of isSelection we need to create our filter
-				ScanningResultFilter filter = null;
-				final int ind = getItemCount();
-				filter = new ScanningResultFilter() {
-					public boolean apply(int ind, ScanningResult result) {
-						return index == ind && result.isReady();
-					}
-				};
-
-				
-				exportProcessor.process(getScanningResults(), filter);
-
+				if(Config.getConfig().forScanner().writeResultToFileImmediately == true) {
+					ScanningResultFilter filter = new ScanningResultFilter() {
+						public boolean apply(int ind, ScanningResult result) {
+							return index == ind && result.isReady();
+						}
+					};
+					
+					exportProcessor.process(getScanningResults(), filter);
+				}
 				//gsanta
 			}
 		});

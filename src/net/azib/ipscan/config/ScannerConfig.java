@@ -32,6 +32,8 @@ public class ScannerConfig {
 	public String notScannedText;
 	//gsanta
 	public String csvSeparator;
+	public boolean writeResultToFileImmediately;
+	public String outputFileName = "result.csv";
 	//gsanta
 
 	/**

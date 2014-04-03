@@ -84,14 +84,21 @@ public class CommandLineProcessor implements CommandProcessor, StateTransitionLi
 				outputFilename = args[++i];
 				if (outputFilename.startsWith("-")) 
 					throw new IllegalArgumentException("Output filename missing");
+				Config.getConfig().forScanner().outputFileName = "valami.csv";
 				exporter = findExporter(outputFilename);
 				// assume autoStart if exporting was specified
-				autoStart = true;
+				autoStart = true;	
 			} 
 			else //gsanta ez is jo szar megoldas
 			if (arg.startsWith("-csv:")) {
 				Config.getConfig().forScanner().csvSeparator = arg.substring(5);
-			} //gsanta
+			} 
+			else
+			if (arg.equals("-write")) {
+				Config.getConfig().forScanner().outputFileName = "valami.csv";
+				Config.getConfig().forScanner().writeResultToFileImmediately = true;
+			}
+			//gsanta
 			else 
 			if (arg.startsWith("-")) {
 				for (char option : arg.substring(1).toCharArray()) {
