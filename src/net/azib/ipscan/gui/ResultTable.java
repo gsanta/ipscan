@@ -14,6 +14,10 @@ import net.azib.ipscan.core.state.ScanningState;
 import net.azib.ipscan.core.state.StateMachine;
 import net.azib.ipscan.core.state.StateMachine.Transition;
 import net.azib.ipscan.core.state.StateTransitionListener;
+import net.azib.ipscan.exporters.ExportProcessor;
+import net.azib.ipscan.exporters.Exporter;
+import net.azib.ipscan.exporters.ExporterRegistry;
+import net.azib.ipscan.exporters.ExportProcessor.ScanningResultFilter;
 import net.azib.ipscan.fetchers.CommentFetcher;
 import net.azib.ipscan.fetchers.Fetcher;
 import net.azib.ipscan.fetchers.FetcherRegistry;
@@ -21,10 +25,12 @@ import net.azib.ipscan.fetchers.FetcherRegistryUpdateListener;
 import net.azib.ipscan.gui.actions.ColumnsActions;
 import net.azib.ipscan.gui.actions.CommandsMenuActions;
 import net.azib.ipscan.gui.actions.ToolsActions;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -37,18 +43,21 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 	private ScanningResultList scanningResults;
 	private GUIConfig guiConfig;
 	private FetcherRegistry fetcherRegistry;
-	
+	//gsanta
+	private final ExporterRegistry exporterRegistry;
+	//gsanta
 	private Image[] listImages = new Image[ResultType.values().length];
 
 	private Listener columnClickListener;
 
 	private Listener columnResizeListener;
 
-	public ResultTable(Composite parent, GUIConfig guiConfig, FetcherRegistry fetcherRegistry, ScanningResultList scanningResultList, StateMachine stateMachine, ColumnsActions.ColumnClick columnClickListener, ColumnsActions.ColumnResize columnResizeListener) {
+	public ResultTable(Composite parent, GUIConfig guiConfig, FetcherRegistry fetcherRegistry, ScanningResultList scanningResultList, StateMachine stateMachine, ColumnsActions.ColumnClick columnClickListener, ColumnsActions.ColumnResize columnResizeListener,ExporterRegistry exporterRegistry) {
 		super(parent, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
 		this.guiConfig = guiConfig;
 		this.scanningResults = scanningResultList;
 		this.fetcherRegistry = fetcherRegistry;
+		this.exporterRegistry = exporterRegistry;
 		
 		setHeaderVisible(true);
 		setLinesVisible(true);
@@ -129,18 +138,41 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 				if (isDisposed())
 					return;
 				
+				final int index;
 				if (scanningResults.isRegistered(result)) {
 					// just redraw the item
-					int index = scanningResults.update(result);
+					index = scanningResults.update(result);
 					clear(index);
 				}
 				else {
 					// first register, then add - otherwise first redraw may fail (the table is virtual)
-					int index = getItemCount();
+					index = getItemCount();
 					scanningResults.registerAtIndex(index, result);
 					// setItemCount(index+1) - this seems to rebuild TableItems inside, so is slower
 					new TableItem(ResultTable.this, SWT.NONE);
 				}
+				
+				//gsanta
+				String fileName = "c:\\\\dev\\valami.csv";
+				Exporter exporter = exporterRegistry.createExporter(fileName);
+				
+				
+				// TODO: expose appending feature in the GUI
+				ExportProcessor exportProcessor = new ExportProcessor(exporter, new File(fileName), true);
+				
+				// in case of isSelection we need to create our filter
+				ScanningResultFilter filter = null;
+				final int ind = getItemCount();
+				filter = new ScanningResultFilter() {
+					public boolean apply(int ind, ScanningResult result) {
+						return index == ind && result.isReady();
+					}
+				};
+
+				
+				exportProcessor.process(getScanningResults(), filter);
+
+				//gsanta
 			}
 		});
 	}
