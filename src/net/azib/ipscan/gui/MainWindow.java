@@ -78,70 +78,7 @@ public class MainWindow {
 			shell.setMaximized(true);
 		}
 		
-		//gsanta
-		Display display = Display.getDefault();
-		Image image = new Image(display,Labels.getInstance().getImageAsStream("icon"));
-	    final Tray tray = display.getSystemTray();
-	    if (tray != null) {
-	    	final TrayItem item = new TrayItem(tray, SWT.NONE);
-	    	
-	    	shell.addShellListener(new ShellListener() {
-	            public void shellIconified(ShellEvent e) {
-	            }
-	            public void shellDeiconified(ShellEvent e) {
-	            }
-	            public void shellDeactivated(ShellEvent e) {
-	            }
-	            public void shellClosed(ShellEvent e) {
-	            	
-	                shell.setVisible(false);
-	                e.doit = false;
-	            }
-	            public void shellActivated(ShellEvent e) {
-	            }
-	        });
-	    	
-	    	item.setToolTipText("Angry IP Scanner");
-	        
-	        item.addListener(SWT.Show, new Listener() {
-	          public void handleEvent(Event event) {
-	            System.out.println("show");
-	          }
-	        });
-	        item.addListener(SWT.Hide, new Listener() {
-	          public void handleEvent(Event event) {
-	            System.out.println("hide");
-	          }
-	        });
-	        item.addListener(SWT.Selection, new Listener() {
-	          public void handleEvent(Event event) {
-	            System.out.println("selection");
-	            shell.setVisible(true);
-	          }
-	        });
-	        item.addListener(SWT.DefaultSelection, new Listener() {
-	          public void handleEvent(Event event) {
-	            System.out.println("default selection");
-	          }
-	        });
-	        final Menu menu = new Menu(shell, SWT.POP_UP);
-	          MenuItem mi = new MenuItem(menu, SWT.PUSH);
-	          mi.setText("Exit");
-	          mi.addListener(SWT.Selection, new Listener() {
-	            public void handleEvent(Event event) {
-	                System.exit(0);
-	            }
-	          });
-	          menu.setDefaultItem(mi);
-	        item.addListener(SWT.MenuDetect, new Listener() {
-	          public void handleEvent(Event event) {
-	            menu.setVisible(true);
-	          }
-	        });
-	        item.setImage(image);
-	    }
-		//gsanta
-
+		registerTrayIfAvailable();
 
 		if (guiConfig.isFirstRun) {
 			Display.getCurrent().asyncExec(new Runnable() {
@@ -167,6 +104,65 @@ public class MainWindow {
 				stateMachine.init();
 			}
 		});
+	}
+	
+	private boolean registerTrayIfAvailable() {
+		Display display = Display.getDefault();
+		Image image = new Image(display,Labels.getInstance().getImageAsStream("icon"));
+	    final Tray tray = display.getSystemTray();
+	    if (tray != null) {
+	    	final TrayItem item = new TrayItem(tray, SWT.NONE);
+	    	
+	    	shell.addShellListener(new ShellListener() {
+	            public void shellIconified(ShellEvent e) {
+	            }
+	            public void shellDeiconified(ShellEvent e) {
+	            }
+	            public void shellDeactivated(ShellEvent e) {
+	            }
+	            public void shellClosed(ShellEvent e) {
+	            	
+	                shell.setVisible(false);
+	                e.doit = false;
+	            }
+	            public void shellActivated(ShellEvent e) {
+	            }
+	        });
+	    	
+	    	item.setToolTipText("Angry IP Scanner");
+
+	        item.addListener(SWT.Selection, new Listener() {
+	          public void handleEvent(Event event) {
+	            shell.setVisible(true);
+	          }
+	        });
+	        item.addListener(SWT.DefaultSelection, new Listener() {
+	          public void handleEvent(Event event) {
+	            System.out.println("default selection");
+	          }
+	        });
+	        
+	        final Menu menu = new Menu(shell, SWT.POP_UP);
+	        
+	        MenuItem mi = new MenuItem(menu, SWT.PUSH);
+	        mi.setText("Exit");
+	        mi.addListener(SWT.Selection, new Listener() {
+	        	public void handleEvent(Event event) {
+	                System.exit(0);
+	            }
+	        });
+	        menu.setDefaultItem(mi);
+	        
+	        item.addListener(SWT.MenuDetect, new Listener() {
+	          public void handleEvent(Event event) {
+	            menu.setVisible(true);
+	          }
+	        });
+	        
+	        item.setImage(image);
+	    }
+	    
+	    return tray != null;
 	}
 	
 	private int showMessage(String text, int buttons) {

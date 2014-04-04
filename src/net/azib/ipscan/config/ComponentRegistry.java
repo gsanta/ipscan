@@ -121,7 +121,7 @@ public class ComponentRegistry {
 				anyComponentParameter, anyComponentParameter });
 		container.registerComponentImplementation(ResultTable.class, ResultTable.class, new Parameter[] {
 				new ComponentParameter("mainShell"), anyComponentParameter, anyComponentParameter,
-				anyComponentParameter, anyComponentParameter, anyComponentParameter, anyComponentParameter, anyComponentParameter });
+				anyComponentParameter, anyComponentParameter, anyComponentParameter, anyComponentParameter });
 		container.registerComponentImplementation(StatusBar.class, StatusBar.class, new Parameter[] {
 				new ComponentParameter("mainShell"), anyComponentParameter, anyComponentParameter, anyComponentParameter, anyComponentParameter });
 

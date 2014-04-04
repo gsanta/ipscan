@@ -35,11 +35,17 @@ public class CommandLineProcessor implements CommandProcessor, StateTransitionLi
 	String[] feederArgs;
 	Exporter exporter;
 	String outputFilename;
-	String csvSeparator = "elvalaszto";
 	
 	boolean autoStart;
 	boolean autoQuit;
 	boolean appendToFile;
+	
+	//gsanta
+	public static boolean writeResultToFileImmediately = false;
+	public static Exporter exporterForImmediateFileWriting;
+	public static ExportProcessor exportProcessor;
+	//gsanta
+	//gsanta
 	
 	CommandLineProcessor(FeederRegistry<FeederCreator> feederCreators, ExporterRegistry exporters) {
 		this.feederRegistry = feederCreators;
@@ -84,7 +90,6 @@ public class CommandLineProcessor implements CommandProcessor, StateTransitionLi
 				outputFilename = args[++i];
 				if (outputFilename.startsWith("-")) 
 					throw new IllegalArgumentException("Output filename missing");
-				Config.getConfig().forScanner().outputFileName = "valami.csv";
 				exporter = findExporter(outputFilename);
 				// assume autoStart if exporting was specified
 				autoStart = true;	
@@ -95,8 +100,7 @@ public class CommandLineProcessor implements CommandProcessor, StateTransitionLi
 			} 
 			else
 			if (arg.equals("-write")) {
-				Config.getConfig().forScanner().outputFileName = "valami.csv";
-				Config.getConfig().forScanner().writeResultToFileImmediately = true;
+				writeResultToFileImmediately = true;
 			}
 			//gsanta
 			else 
@@ -117,6 +121,15 @@ public class CommandLineProcessor implements CommandProcessor, StateTransitionLi
 		if (feederCreator == null)
 			throw new IllegalArgumentException("Feeder missing");
 		feederCreator.unserialize(feederArgs);
+		
+		//gsanta
+		if(writeResultToFileImmediately == true) {
+			File file = new File(outputFilename);
+			file.delete();
+			exporterForImmediateFileWriting = exporters.createExporter(outputFilename);
+			exportProcessor  = new ExportProcessor(exporter, new File(outputFilename), true);
+		}
+		//gsanta
 	}
 
 	@Override
@@ -141,6 +154,9 @@ public class CommandLineProcessor implements CommandProcessor, StateTransitionLi
 		usage.append("-s\tstart scanning automatically\n");
 		usage.append("-q\tquit after exporting the results\n");
 		usage.append("-a\tappend to the file, do not overwrite\n");
+		usage.append("-write\twrite during scan\n");
+		usage.append("-csv:<separator>\tchange the csv separator\n");
+		
 		return usage.toString();
 	}
 
@@ -174,8 +190,10 @@ public class CommandLineProcessor implements CommandProcessor, StateTransitionLi
 		else
 		if (transition == Transition.COMPLETE && state == ScanningState.IDLE && exporter != null) {
 			// TODO: introduce SAVING state in order to show nice notification in the status bar
-			ExportProcessor processor = new ExportProcessor(exporter, new File(outputFilename), appendToFile);
-			processor.process(scanningResults, null);
+			if(!writeResultToFileImmediately) {
+				ExportProcessor processor = new ExportProcessor(exporter, new File(outputFilename), appendToFile);
+				processor.process(scanningResults, null);
+			}
 			if (autoQuit) {
 				System.err.println("Saved results to " + outputFilename);
 				System.exit(0);

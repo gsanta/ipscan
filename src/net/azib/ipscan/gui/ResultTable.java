@@ -5,6 +5,7 @@
  */
 package net.azib.ipscan.gui;
 
+import net.azib.ipscan.config.CommandLineProcessor;
 import net.azib.ipscan.config.Config;
 import net.azib.ipscan.config.GUIConfig;
 import net.azib.ipscan.config.Labels;
@@ -44,24 +45,18 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 	private ScanningResultList scanningResults;
 	private GUIConfig guiConfig;
 	private FetcherRegistry fetcherRegistry;
-	//gsanta
-	private final ExporterRegistry exporterRegistry;
-	//gsanta
+
 	private Image[] listImages = new Image[ResultType.values().length];
 
 	private Listener columnClickListener;
 
 	private Listener columnResizeListener;
-	
-	Exporter exporter;
-	ExportProcessor exportProcessor;
 
-	public ResultTable(Composite parent, GUIConfig guiConfig, FetcherRegistry fetcherRegistry, ScanningResultList scanningResultList, StateMachine stateMachine, ColumnsActions.ColumnClick columnClickListener, ColumnsActions.ColumnResize columnResizeListener,ExporterRegistry exporterRegistry) {
+	public ResultTable(Composite parent, GUIConfig guiConfig, FetcherRegistry fetcherRegistry, ScanningResultList scanningResultList, StateMachine stateMachine, ColumnsActions.ColumnClick columnClickListener, ColumnsActions.ColumnResize columnResizeListener) {
 		super(parent, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.VIRTUAL);
 		this.guiConfig = guiConfig;
 		this.scanningResults = scanningResultList;
 		this.fetcherRegistry = fetcherRegistry;
-		this.exporterRegistry = exporterRegistry;
 		
 		setHeaderVisible(true);
 		setLinesVisible(true);
@@ -88,10 +83,6 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 		// listen to state machine events
 		stateMachine.addTransitionListener(this);
 		
-		//gsanta
-		exporter = exporterRegistry.createExporter(Config.getConfig().forScanner().outputFileName);
-		exportProcessor = new ExportProcessor(exporter, new File(Config.getConfig().forScanner().outputFileName), true);
-		//gsanta
 	}
 
 	/**
@@ -163,14 +154,14 @@ public class ResultTable extends Table implements FetcherRegistryUpdateListener,
 				
 				//gsanta
 				
-				if(Config.getConfig().forScanner().writeResultToFileImmediately == true) {
+				if(CommandLineProcessor.writeResultToFileImmediately == true) {
 					ScanningResultFilter filter = new ScanningResultFilter() {
 						public boolean apply(int ind, ScanningResult result) {
 							return index == ind && result.isReady();
 						}
 					};
 					
-					exportProcessor.process(getScanningResults(), filter);
+					CommandLineProcessor.exportProcessor.process(getScanningResults(), filter);
 				}
 				//gsanta
 			}
